@@ -1,0 +1,46 @@
+
+----- 1 -----
+
+(a)
+% get_klada(D+, Xs+, NewXs-, Kladas-)
+% predikat nalezne prave jednu mnozinu klad kterou lze z jednoho tramu delky D narezat
+% Vraci `Kladas` narezane klady a `NewXs` zbyle klady (NewXs sjednoceno s Kladas = Xs) 
+get_klada(_, [], [], []).
+get_klada(D, [X | Xs], NewXs, [X | Kladas]) :- 
+    X =< D, !,
+    DminX is D - X,
+    get_klada(DminX, Xs, NewXs, Kladas).
+get_klada(D, [X | Xs], [X | NewXs], Kladas) :-
+    get_klada(D, Xs, NewXs, Kladas).
+
+valid_kladas(_, []) :- !.
+valid_kladas(D, [K | Kladas]) :- D >= K, valid_kladas(D, Kladas). 
+
+
+internal_rezy(_, [], 0, []) :- !.
+internal_rezy(D, Xs, N, [Kladas | KladasList]) :-
+    get_klada(D, Xs, NewXs, Kladas),
+    rezy(D, NewXs, RecN, KladasList),
+    N is RecN + 1, !.
+
+rezy(D, Xs, N, Vss) :-
+    D > 0,
+    valid_kladas(D, Xs),
+    internal_rezy(D, Xs, N, Vss).
+
+(b)
+-> definice koncove rekurze je, ze volani posledni funkce v definici predikatu muze vyuzit stack frame tj. po poslednim volani se rovnou vraci vysledek
+    (to vede k rekurzi neomezene delky)
+    -> nahledem na reseni snadno nahledneme, ze valid_kladas je koncove rekursivni
+    -> mohlo by se zdat, ze priklad nize je koncove rekurzivni:
+    
+        get_klada(D, [X | Xs], [X | NewXs], Kladas) :-
+            get_klada(D, Xs, NewXs, Kladas).
+
+        ale neni koncove rekurzivni, kvuli navratu  [X | NewXs] -> jinymi slovy po rekurzivnim volani get_kladas je potreba pridat do vysledku X.
+
+-> dale bylo by mozne predikat rezy predelat tak, aby pouzival akumulator -> tedy z rekurzivniho volani by se vracel rovnou vysledek
+
+(c)
+oba predikaty jsem definoval tak, aby byly deterministicke a vsechny pouzite knihovni predikaty jsou take deterministicke (pouzil jsem pouze kostrukt na scitani)
+jinymi slovy vypocet se nemuze vydat jinymi smery -> zde by byl nedeterminismus na obtiz
