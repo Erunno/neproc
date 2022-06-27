@@ -44,3 +44,45 @@ rezy(D, Xs, N, Vss) :-
 (c)
 oba predikaty jsem definoval tak, aby byly deterministicke a vsechny pouzite knihovni predikaty jsou take deterministicke (pouzil jsem pouze kostrukt na scitani)
 jinymi slovy vypocet se nemuze vydat jinymi smery -> zde by byl nedeterminismus na obtiz
+
+---- 2 -----
+(a)
+
+myTakeWhile _ [] = []
+myTakeWhile f (x:xs) = 
+    if (f x) then (x:(myTakeWhile f xs)) else []
+
+myDropWhile _ [] = []
+myDropWhile f (x:xs) = 
+     if (f x) then (myDropWhile f xs) else (x:xs)
+
+encode :: Eq a => [a] -> [Either a (a,Int)]
+encode [] = []
+encode (x:xs) = 
+    if count == 1 then ((Left x):rest) else (Right (x, count):rest)
+    where 
+        fstPart = myTakeWhile (==x) (x:xs)
+        count = length fstPart
+        restOfList = myDropWhile (==x) xs
+        rest = encode restOfList
+
+(d)
+ano jsou vyuzity funkce myTakeWhile (ekvivalent k takeWhile) a dropWhile (ekvivalent k dropWhile) 
+(nebyl jsem si jist jestli to nejsou jedny ze zakazanych funkci, tak jsem to sam naimplementoval)
+
+(e)
+z principu veci funkce encode nemuze pracovat nad nekonecnymi vstupy protoze by se sekvence mohla opakovat do nekonecna
+napriklad string "aaaaaaa..." (nekonecne mnoho 'a') by musela vratit neco jako [Right ('a', nekonecno)] coz nejde
+
+funkce decode by principielne mohla byt vyhnocovana line a tedy fungovat pro nekonecne vstupy (dokonce i pri rozsireni na neco jako Right ('a', nekonecno))
+a take jsem ji definoval tak, ze funkguje s nekonecnymi vstupy
+
+
+(b/c)
+myReplicate :: Int -> a -> [a]                
+myReplicate n x = if (n <= 0) then [] else (x : replicate (n-1) x) 
+
+decode :: [Either a (a,Int)] -> [a]
+decode [] = []
+decode ((Left x):xs) = (x:(decode xs))
+decode ((Right (x, count)):xs) = (myReplicate count x) ++ (decode xs)
